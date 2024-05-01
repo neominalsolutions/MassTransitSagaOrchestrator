@@ -31,14 +31,14 @@ namespace Payment.API
         {
             services.AddMassTransit(configure =>
             {
-                configure.AddConsumer<PaymentStartedEventConsumer>();
+                configure.AddConsumer<StartPaymentCommandConsumer>();
 
                 configure.UsingRabbitMq((context, configurator) =>
                 {
                     configurator.Host(Configuration.GetConnectionString("RabbitMQLocal"));
 
                     configurator.ReceiveEndpoint(RabbitMQSettings.Payment_StartedEventQueue, e =>
-                    e.ConfigureConsumer<PaymentStartedEventConsumer>(context));
+                    e.ConfigureConsumer<StartPaymentCommandConsumer>(context));
                 });
             });
 

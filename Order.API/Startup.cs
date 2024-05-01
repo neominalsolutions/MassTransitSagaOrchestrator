@@ -48,7 +48,7 @@ namespace Order.API
                   e.ConfigureConsumer<OrderCompletedEventConsumer>(context));
 
 
-                  configurator.ReceiveEndpoint(RabbitMQSettings.Order_OrderFailedEventQueue, e =>
+                  configurator.ReceiveEndpoint(e =>
                     e.ConfigureConsumer<OrderFailedEventConsumer>(context));
                 });
             });

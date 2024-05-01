@@ -6,17 +6,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Shared.Events
+namespace Shared.Commands
 {
-    public class PaymentFailedEvent : CorrelatedBy<Guid>
+     // Siparişteki ürünler rezerve edildiği durumda State Machine Servise gönderilir.
+    public class StockReservedCommand : CorrelatedBy<Guid>
     {
-        public PaymentFailedEvent(Guid correlationId)
+        public StockReservedCommand(Guid correlationId)
         {
             CorrelationId = correlationId;
         }
         public Guid CorrelationId { get; }
 
         public int OrderId { get; set; }
-        public string Message { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using MassTransit;
 using Shared;
-using Shared.Events;
+using Shared.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,24 +8,22 @@ using System.Threading.Tasks;
 
 namespace Payment.API.Consumers
 {
-    public class PaymentStartedEventConsumer : IConsumer<PaymentStartedEvent>
+    public class StartPaymentCommandConsumer : IConsumer<StartPaymentCommand>
     {
         readonly ISendEndpointProvider _sendEndpointProvider;
-        readonly IPublishEndpoint _publishEndpoint;
-        public PaymentStartedEventConsumer(ISendEndpointProvider sendEndpointProvider,
-            IPublishEndpoint publishEndpoint)
+       
+        public StartPaymentCommandConsumer(ISendEndpointProvider sendEndpointProvider)
         {
             this._sendEndpointProvider = sendEndpointProvider;
-            _publishEndpoint = publishEndpoint;
         }
 
-        public async Task Consume(ConsumeContext<PaymentStartedEvent> context)
+        public async Task Consume(ConsumeContext<StartPaymentCommand> context)
         {
             ISendEndpoint sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri($"queue:{RabbitMQSettings.StateMachine}"));
             if (context.Message.TotalPrice <= 100)
-                await sendEndpoint.Send(new PaymentCompletedEvent(context.Message.CorrelationId));
+                await sendEndpoint.Send(new PaymentCompletedCommand(context.Message.CorrelationId));
             else
-                await sendEndpoint.Send(new PaymentFailedEvent(context.Message.CorrelationId)
+                await sendEndpoint.Send(new PaymentFailedCommand(context.Message.CorrelationId)
                 {
                     Message = "Bakiye yetersiz!",
                     OrderId = context.Message.OrderId

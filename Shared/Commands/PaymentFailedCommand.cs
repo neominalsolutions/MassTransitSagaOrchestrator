@@ -6,16 +6,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Shared.Events
+namespace Shared.Commands
 {
-    public class StockNotReservedEvent : CorrelatedBy<Guid>
+    // Ödeme alınamadığı durumda Payment API dan State Machine Service'e gönderilir.
+    public class PaymentFailedCommand : CorrelatedBy<Guid>
     {
-        public StockNotReservedEvent(Guid correlationId)
+        public PaymentFailedCommand(Guid correlationId)
         {
             CorrelationId = correlationId;
         }
         public Guid CorrelationId { get; }
+
+        public int OrderId { get; set; }
         public string Message { get; set; }
-        public List<OrderItemMessage> OrderItems { get; set; }
     }
 }

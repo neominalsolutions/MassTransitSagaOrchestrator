@@ -1,6 +1,7 @@
 ﻿using Automatonymous;
 using SagaStateMachine.Service.Instruments;
 using Shared;
+using Shared.Commands;
 using Shared.Events;
 using Shared.Messages;
 using System;
@@ -13,20 +14,20 @@ namespace SagaStateMachine.Service.StateMachines
 {
     public class OrderStateMachine : MassTransitStateMachine<OrderStateInstance>
     {
-        public Event<OrderStartedEvent> OrderStartedEvent { get; set; }
-        public Event<StockReservedEvent> StockReservedEvent { get; set; }
-        public Event<PaymentCompletedEvent> PaymentCompletedEvent { get; set; }
-        public Event<PaymentFailedEvent> PaymentFailedEvent { get; set; }
-        public Event<StockNotReservedEvent> StockNotReservedEvent { get; set; }
+        public Event<SubmitOrderCommand> OrderSubmitted { get; set; }
+        public Event<StockReservedCommand> StockReserved { get; set; }
+        public Event<PaymentCompletedCommand> PaymentCompleted { get; set; }
+        public Event<PaymentFailedCommand> PaymentFailed { get; set; }
+        public Event<StockNotreservedCommand> StockNotReserved { get; set; }
 
     // Önemli: State Machine içerisinde sadece State Machine tarafından dinlenecek olan eventler tanımlanır. Dinleyici eventler durum değişikliklerinin yakalanması ve sürecin yönetilmesi için kullanılır.
     // Bu eventler süreci API devremek için farklı Eventleri Queue devredebilir. 
 
-        public State OrderCreated { get; set; }
-        public State StockReserved { get; set; }
-        public State PaymentCompleted { get; set; }
-        public State PaymentFailed { get; set; }
-        public State StockNotReserved { get; set; }
+        public State OrderSubmmitedState { get; set; }
+        public State StockReservedState { get; set; }
+        public State PaymentCompletedState { get; set; }
+        public State PaymentFailedState { get; set; }
+        public State StockNotReservedState { get; set; }
         public OrderStateMachine()
         {
             //State Instance'da ki hangi property'nin sipariş sürecindeki state'i tutacağı bildiriliyor.
@@ -35,29 +36,29 @@ namespace SagaStateMachine.Service.StateMachines
 
       // Süreci Order Started Eventinden başladığımız için bir Corrlation yani Süreç takip Idsi ürettik. Diğer Eventler aynı Id üzerinden süreçlerini devam ettirecektir. aşığdaki  orderStateInstance.CorrelateById(@event => @event.Message.CorrelationId)); kodu bunun için kullanılmıştır.
 
-            Event(() => OrderStartedEvent,
+            Event(() => OrderSubmitted,
                 orderStateInstance =>
                 orderStateInstance.CorrelateBy<int>(database => database.OrderId, @event => @event.Message.OrderId)
                 .SelectId(e => Guid.NewGuid()));
 
-            Event(() => StockReservedEvent,
+            Event(() => StockReserved,
                 orderStateInstance =>
                 orderStateInstance.CorrelateById(@event => @event.Message.CorrelationId));
 
-            Event(() => StockNotReservedEvent,
+            Event(() => StockNotReserved,
                 orderStateInstance =>
                 orderStateInstance.CorrelateById(@event => @event.Message.CorrelationId));
     
-            Event(() => PaymentCompletedEvent,
+            Event(() => PaymentCompleted,
                 orderStateInstance =>
                 orderStateInstance.CorrelateById(@event => @event.Message.CorrelationId));
 
-            Event(() => PaymentFailedEvent,
+            Event(() => PaymentFailed,
                 orderStateInstance =>
                 orderStateInstance.CorrelateById(@event => @event.Message.CorrelationId));
 
             // Order Started ise Stock API da orderdaki Ürünlerin Stokları elimizde var mı yok mu kontrolü için OrderCreated Komutunu Stock API gönder.Süreci Stock API devret
-            Initially(When(OrderStartedEvent)
+            Initially(When(OrderSubmitted)
                 .Then(context =>
                 {
                     context.Instance.BuyerId = context.Data.BuyerId;
@@ -67,28 +68,28 @@ namespace SagaStateMachine.Service.StateMachines
                 })
                 .Then(context => Console.WriteLine("Ara işlem 1"))
                 .Then(context => Console.WriteLine("Ara işlem 2"))
-                .TransitionTo(OrderCreated)
+                .TransitionTo(OrderSubmmitedState)
                 .Then(context => Console.WriteLine("Ara işlem 3"))
-                .Send(new Uri($"queue:{RabbitMQSettings.Stock_OrderCreatedEventQueue}"), context => new OrderCreatedEvent(context.Instance.CorrelationId)
+                .Send(new Uri($"queue:{RabbitMQSettings.Stock_OrderCreatedEventQueue}"), context => new CheckStockCommand(context.Instance.CorrelationId)
                 {
                     OrderId = context.Data.OrderId,
                     OrderItems = context.Data.OrderItems
                 }));
 
       // Eğer OrderCreated State'indeyken STOCK APIDEN Stock Reserved Eventi fırlatıldıysa ORDER STATE MACHINE dan PAYMENT STARTED Eventi Fırlat. PAYMENT API İşi devret.
-      During(OrderCreated,
-          When(StockReservedEvent)
-          .TransitionTo(StockReserved)
-          .Send(new Uri($"queue:{RabbitMQSettings.Payment_StartedEventQueue}"), context => new PaymentStartedEvent(context.Instance.CorrelationId)
+      During(OrderSubmmitedState,
+          When(StockReserved)
+          .TransitionTo(StockReservedState)
+          .Send(new Uri($"queue:{RabbitMQSettings.Payment_StartedEventQueue}"), context => new StartPaymentCommand(context.Instance.CorrelationId)
           {
             OrderId = context.Instance.OrderId,
             TotalPrice = context.Instance.TotalPrice
           }),
 
           // STOCK NOTRESERVED ISE STOCK YETERSIZ ORDER IPTAL ET, ORDER API süreci devret. ORDER API Order State'i Failed olarak düzeltsin.
-          When(StockNotReservedEvent)
-          .TransitionTo(StockNotReserved)
-          .Send(new Uri($"queue:{RabbitMQSettings.Order_OrderFailedEventQueue}"), context => new OrderFailedEvent()
+          When(StockNotReserved)
+          .TransitionTo(StockNotReservedState)
+          .Publish(context => new Shared.Events.OrderFailedEvent()
           {
             OrderId = context.Instance.OrderId,
             Message = context.Data.Message
@@ -97,9 +98,9 @@ namespace SagaStateMachine.Service.StateMachines
 
 
       // Eğer STOCKRESERVED IKEN PAYMENT COMPLETED ISE ÖDEME ALINMIŞTIR, STATE MACHINE üzerinden ORDER API süreci devret. Order API da Order State'ini Completed olarak güncellesin. Burada tüm süreç başarılı bir şekilde sonlandı.
-      During(StockReserved,
-          When(PaymentCompletedEvent)
-          .TransitionTo(PaymentCompleted)
+      During(StockReservedState,
+          When(PaymentCompleted)
+          .TransitionTo(PaymentCompletedState)
           .Publish(context => new OrderCompletedEvent
           {
             OrderId = context.Instance.OrderId
@@ -107,9 +108,9 @@ namespace SagaStateMachine.Service.StateMachines
           //.Finalize(), // Burada işi finalize ediyoruz.
 
           // Eğer ödeme alınmadıysa bu durumda STATE Machine Order API order Failed komutu gönderip, ORDER API Order state İptale çeksin. Süreç burada sonlansın
-          When(PaymentFailedEvent)
-          .TransitionTo(PaymentFailed)
-          .Send(new Uri($"queue:{RabbitMQSettings.Order_OrderFailedEventQueue}"), context => new OrderFailedEvent()
+          When(PaymentFailed)
+          .TransitionTo(PaymentFailedState)
+          .Publish(context => new Shared.Events.OrderFailedEvent()
           {
             OrderId = context.Instance.OrderId,
             Message = context.Data.Message

@@ -1,6 +1,7 @@
 ﻿using MassTransit;
 using Order.API.Models.Contexts;
 using Order.API.Models.Enums;
+using Shared.Commands;
 using Shared.Events;
 using System;
 using System.Collections.Generic;

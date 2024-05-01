@@ -6,17 +6,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Shared.Events
+namespace Shared.Commands
 {
-    public class OrderCreatedEvent : CorrelatedBy<Guid>
+    // Sipariş edilen ürünlerin Reserve Edilmediği durumda gönderilir.
+    // Stock API dan State Machine API gönderilir.
+    public class StockNotreservedCommand : CorrelatedBy<Guid>
     {
-        public OrderCreatedEvent(Guid correlationId)
+        public StockNotreservedCommand(Guid correlationId)
         {
             CorrelationId = correlationId;
         }
         public Guid CorrelationId { get; }
-
-        public int OrderId { get; set; }
+        public string Message { get; set; }
         public List<OrderItemMessage> OrderItems { get; set; }
     }
 }

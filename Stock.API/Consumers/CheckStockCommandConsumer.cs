@@ -1,7 +1,7 @@
 ﻿using MassTransit;
 using MongoDB.Driver;
 using Shared;
-using Shared.Events;
+using Shared.Commands;
 using Shared.Messages;
 using Stock.API.Services;
 using System;
@@ -11,23 +11,20 @@ using System.Threading.Tasks;
 
 namespace Stock.API.Consumers
 {
-    public class OrderCreatedEventConsumer : IConsumer<OrderCreatedEvent>
+    public class CheckStockCommandConsumer : IConsumer<CheckStockCommand>
   {
     readonly MongoDbService _mongoDbService;
     readonly ISendEndpointProvider _sendEndpointProvider;
-    readonly IPublishEndpoint _publishEndpoint;
 
-    public OrderCreatedEventConsumer(
+    public CheckStockCommandConsumer(
         MongoDbService mongoDbService,
-        ISendEndpointProvider sendEndpointProvider,
-        IPublishEndpoint publishEndpoint)
+        ISendEndpointProvider sendEndpointProvider)
     {
       _mongoDbService = mongoDbService;
       _sendEndpointProvider = sendEndpointProvider;
-      _publishEndpoint = publishEndpoint;
     }
 
-    public async Task Consume(ConsumeContext<OrderCreatedEvent> context)
+    public async Task Consume(ConsumeContext<CheckStockCommand> context)
     {
 
 
@@ -61,21 +58,21 @@ namespace Stock.API.Consumers
           await collection.FindOneAndReplaceAsync(x => x.ProductId == orderItem.ProductId, stock);
         }
 
-        StockReservedEvent stockReservedEvent = new(context.Message.CorrelationId)
+        StockReservedCommand reserveStockCommand = new(context.Message.CorrelationId)
         {
           OrderId = context.Message.OrderId
         };
-        await sendEndpoint.Send(stockReservedEvent);
+        await sendEndpoint.Send(reserveStockCommand);
       }
       else
       {
-        StockNotReservedEvent stockNotReservedEvent = new(context.Message.CorrelationId)
+        StockNotreservedCommand NotReserveStockCommand = new(context.Message.CorrelationId)
         {
           Message = "Stok yetersiz...",
           OrderItems = context.Message.OrderItems
         };
 
-        await sendEndpoint.Send(stockNotReservedEvent);
+        await sendEndpoint.Send(NotReserveStockCommand);
       }
     }
   }

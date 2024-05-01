@@ -5,13 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Shared.Events
+namespace Shared.Commands
 {
-    // Hangi Order için Ne kadarlık bir tutar ödeyeceğimiz bilgisini tutar.
+    // Payment API de ödeme işlemini başlatmak için StockReserved edildiği durumda State Machine Service üzerinden gönderilir.
+    // Payment işlemini başlatmak anlamına gelir.
     // Burada Kredi Kart Bilgileride tutulamalıdır. Örnek olduğu için ihmal edilmiştir.
-    public class PaymentStartedEvent : CorrelatedBy<Guid>
+    public class StartPaymentCommand : CorrelatedBy<Guid>
     {
-        public PaymentStartedEvent(Guid correlationId)
+        public StartPaymentCommand(Guid correlationId)
         {
             CorrelationId = correlationId;
         }

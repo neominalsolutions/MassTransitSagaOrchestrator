@@ -33,14 +33,14 @@ namespace Stock.API
         {
             services.AddMassTransit(configure =>
             {
-                configure.AddConsumer<OrderCreatedEventConsumer>();
+                configure.AddConsumer<CheckStockCommandConsumer>();
                 configure.AddConsumer<OrderCompletedEventConsumer>();
 
                 configure.UsingRabbitMq((context, configurator) =>
                 {
                     configurator.Host(Configuration.GetConnectionString("RabbitMQLocal"));
 
-                    configurator.ReceiveEndpoint(RabbitMQSettings.Stock_OrderCreatedEventQueue, e => e.ConfigureConsumer<OrderCreatedEventConsumer>(context));
+                    configurator.ReceiveEndpoint(RabbitMQSettings.Stock_OrderCreatedEventQueue, e => e.ConfigureConsumer<CheckStockCommandConsumer>(context));
 
                   configurator.ReceiveEndpoint(e =>
      e.ConfigureConsumer<OrderCompletedEventConsumer>(context));

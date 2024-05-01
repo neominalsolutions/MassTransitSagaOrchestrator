@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Shared.Messages;
 
-namespace Shared.Events
+namespace Shared.Commands
 {
-    public class OrderStartedEvent
+    public class SubmitOrderCommand
     {
         public int OrderId { get; set; }
         public int BuyerId { get; set; }

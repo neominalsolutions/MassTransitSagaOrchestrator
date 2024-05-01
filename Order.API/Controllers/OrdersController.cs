@@ -6,7 +6,7 @@ using Order.API.Models.Contexts;
 using Order.API.Models.Enums;
 using Order.API.ViewModels;
 using Shared;
-using Shared.Events;
+using Shared.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +27,7 @@ namespace Order.API.Controllers
             _sendEndpointProvider = sendEndpointProvider;
         }
         [HttpPost]
-        public async Task<IActionResult> CreateOrder(OrderVM model)
+        public async Task<IActionResult> SubmitOrder(OrderVM model)
         {
             Order.API.Models.Order order = new()
             {
@@ -47,7 +47,7 @@ namespace Order.API.Controllers
 
             await _applicationDbContext.SaveChangesAsync();
 
-            OrderStartedEvent orderStartedEvent = new()
+            SubmitOrderCommand submitOrder = new()
             {
                 BuyerId = model.BuyerId,
                 OrderId = order.Id,
@@ -61,7 +61,7 @@ namespace Order.API.Controllers
             };
 
             ISendEndpoint sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new($"queue:{RabbitMQSettings.StateMachine}"));
-            await sendEndpoint.Send<OrderStartedEvent>(orderStartedEvent);
+            await sendEndpoint.Send(submitOrder);
             return Ok(true);
         }
     }
