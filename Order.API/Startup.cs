@@ -36,16 +36,19 @@ namespace Order.API
 
             services.AddMassTransit(configure =>
             {
-                configure.AddConsumer<OrderCompletedEventConsumer>();
-                configure.AddConsumer<OrderFailedEventConsumer>();
+              configure.AddConsumer<OrderCompletedEventConsumer>();
+              configure.AddConsumer<OrderFailedEventConsumer>();
 
                 configure.UsingRabbitMq((context, configurator) =>
                 {
                     configurator.Host(Configuration.GetConnectionString("RabbitMQLocal"));
 
-                    configurator.ReceiveEndpoint(RabbitMQSettings.Order_OrderCompletedEventQueue, e =>
-                    e.ConfigureConsumer<OrderCompletedEventConsumer>(context));
-                    configurator.ReceiveEndpoint(RabbitMQSettings.Order_OrderFailedEventQueue, e =>
+                  // publish edilen event dinleyeceðinden dolayý queue yazýlmadý
+                  configurator.ReceiveEndpoint(e =>
+                  e.ConfigureConsumer<OrderCompletedEventConsumer>(context));
+
+
+                  configurator.ReceiveEndpoint(RabbitMQSettings.Order_OrderFailedEventQueue, e =>
                     e.ConfigureConsumer<OrderFailedEventConsumer>(context));
                 });
             });

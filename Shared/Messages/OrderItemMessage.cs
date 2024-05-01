@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace Shared.Messages
 {
-    public class StockRollBackMessage
+    public class OrderItemMessage
     {
-        public List<OrderItemMessage> OrderItems { get; set; }
+        public int ProductId { get; set; }
+        public int Quantity { get; set; }
+        public decimal Price { get; set; }
     }
 }

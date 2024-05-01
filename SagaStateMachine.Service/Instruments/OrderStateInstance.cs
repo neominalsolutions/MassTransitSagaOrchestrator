@@ -15,11 +15,10 @@ namespace SagaStateMachine.Service.Instruments
     public class OrderStateInstance : SagaStateMachineInstance
     {
         /// <summary>
-        /// Her bir State Instance özünde bir siparişe özeldir. Haliyle bu State Instance'ları
-        /// birbirinden ayırabilmek için CorrelationId(yani bildiğiniz unique id) kullanılmaktadır
+        /// Her bir State Instance ait bilgilerin tutulacağı Entity
         /// </summary>
         public Guid CorrelationId { get; set; }
-        public string CurrentState { get; set; }
+        public string CurrentState { get; set; } // her bir asenkron işlemdeki state bilgisi
         public int OrderId { get; set; }
         public int BuyerId { get; set; }
         public decimal TotalPrice { get; set; }

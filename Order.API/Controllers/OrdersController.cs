@@ -52,10 +52,10 @@ namespace Order.API.Controllers
                 BuyerId = model.BuyerId,
                 OrderId = order.Id,
                 TotalPrice = model.OrderItems.Sum(oi => oi.Count * oi.Price),
-                OrderItems = model.OrderItems.Select(oi => new Shared.OrderItemMessage
+                OrderItems = model.OrderItems.Select(oi => new Shared.Messages.OrderItemMessage
                 {
                     Price = oi.Price,
-                    Count = oi.Count,
+                    Quantity = oi.Count,
                     ProductId = oi.ProductId
                 }).ToList()
             };

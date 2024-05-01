@@ -28,7 +28,7 @@ namespace Payment.API.Consumers
                 await sendEndpoint.Send(new PaymentFailedEvent(context.Message.CorrelationId)
                 {
                     Message = "Bakiye yetersiz!",
-                    OrderItems = context.Message.OrderItems
+                    OrderId = context.Message.OrderId
                 });
         }
     }

@@ -1,4 +1,5 @@
 ﻿using MassTransit;
+using Shared.Messages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,8 @@ namespace Shared.Events
             CorrelationId = correlationId;
         }
         public Guid CorrelationId { get; }
+
+        public int OrderId { get; set; }
         public List<OrderItemMessage> OrderItems { get; set; }
     }
 }

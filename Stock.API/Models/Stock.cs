@@ -23,5 +23,6 @@ namespace Stock.API.Models
         [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
         [BsonElement(Order = 3)]
         public DateTime CreatedDate { get; set; } = DateTime.Now;
-    }
+        public List<StockReservation> Reservations { get; set; } = new List<StockReservation>();
+  }
 }
