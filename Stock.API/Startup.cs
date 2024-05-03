@@ -40,7 +40,7 @@ namespace Stock.API
                 {
                     configurator.Host(Configuration.GetConnectionString("RabbitMQLocal"));
 
-                    configurator.ReceiveEndpoint(RabbitMQSettings.Stock_OrderCreatedEventQueue, e => e.ConfigureConsumer<CheckStockCommandConsumer>(context));
+                    configurator.ReceiveEndpoint(RabbitMQSettings.CheckStockQuee, e => e.ConfigureConsumer<CheckStockCommandConsumer>(context));
 
                   configurator.ReceiveEndpoint(e =>
      e.ConfigureConsumer<OrderCompletedEventConsumer>(context));

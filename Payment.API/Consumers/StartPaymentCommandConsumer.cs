@@ -1,4 +1,5 @@
 ﻿using MassTransit;
+using MassTransit.Transports;
 using Shared;
 using Shared.Commands;
 using System;
@@ -19,10 +20,11 @@ namespace Payment.API.Consumers
 
         public async Task Consume(ConsumeContext<StartPaymentCommand> context)
         {
+           // state machine gönderilen herşey komut niteliğinde olmalıdır. 
             ISendEndpoint sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri($"queue:{RabbitMQSettings.StateMachine}"));
             if (context.Message.TotalPrice <= 100)
                 await sendEndpoint.Send(new PaymentCompletedCommand(context.Message.CorrelationId));
-            else
+      else
                 await sendEndpoint.Send(new PaymentFailedCommand(context.Message.CorrelationId)
                 {
                     Message = "Bakiye yetersiz!",

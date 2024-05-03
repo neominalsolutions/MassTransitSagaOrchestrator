@@ -70,7 +70,7 @@ namespace SagaStateMachine.Service.StateMachines
                 .Then(context => Console.WriteLine("Ara işlem 2"))
                 .TransitionTo(OrderSubmmitedState)
                 .Then(context => Console.WriteLine("Ara işlem 3"))
-                .Send(new Uri($"queue:{RabbitMQSettings.Stock_OrderCreatedEventQueue}"), context => new CheckStockCommand(context.Instance.CorrelationId)
+                .Send(new Uri($"queue:{RabbitMQSettings.CheckStockQuee}"), context => new CheckStockCommand(context.Instance.CorrelationId)
                 {
                     OrderId = context.Data.OrderId,
                     OrderItems = context.Data.OrderItems
