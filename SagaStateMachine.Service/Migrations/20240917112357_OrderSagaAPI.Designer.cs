@@ -10,8 +10,8 @@ using SagaStateMachine.Service.Instruments;
 namespace SagaStateMachine.Service.Migrations
 {
     [DbContext(typeof(OrderStateDbContext))]
-    [Migration("20210830102803_mig_1")]
-    partial class mig_1
+    [Migration("20240917112357_OrderSagaAPI")]
+    partial class OrderSagaAPI
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

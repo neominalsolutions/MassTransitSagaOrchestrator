@@ -30,6 +30,8 @@ namespace Stock.API.Consumers
 
       IMongoCollection<Models.Stock> collection = _mongoDbService.GetCollection<Models.Stock>();
 
+  
+
       // Her bir ürüne ait stok bilgisi siparişteki stock bilgisi ile check ediliyor.
       List<bool> stockResult = new();
       foreach (OrderItemMessage orderItem in context.Message.OrderItems)

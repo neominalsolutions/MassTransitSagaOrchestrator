@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace SagaStateMachine.Service.Migrations
 {
-    public partial class mig_1 : Migration
+    public partial class OrderSagaAPI : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

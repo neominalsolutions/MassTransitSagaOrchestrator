@@ -10,8 +10,8 @@ using Order.API.Models.Contexts;
 namespace Order.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20210828181443_mig_1")]
-    partial class mig_1
+    [Migration("20240917112108_OrderAPI")]
+    partial class OrderAPI
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
